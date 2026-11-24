@@ -198,16 +198,14 @@ footer{text-align:center;padding:8px 16px 24px;font-size:.9rem}
 <div id="ts" role="status"></div>
 
 <script>
-/* ============ CONFIGURACIÓN: edita aquí tus datos ============ */
 const WA = '525530509982';
-const HORARIO = '';          // Ej: 'Abierto hoy hasta las 10 pm · Entrega en Jiutepec'
-const META = 20;             // PalomoPuntos para ganar el topping gratis
-let GOM = 17;                // Gomitas a granel base: $ por 100 g
-let TOP = 5;                 // Topping extra: $ por topping
+const HORARIO = '';
+const META = 20;
+let GOM = 17;
+let TOP = 5;
 const TOPS = ['Polvo de chile y limón','Chispas de chocolate','Malvaviscos','Chamoy','Caramelo líquido'];
 const FMT = ['Bolsa chica','Caja palomera'];
 
-// [emoji, nombre, etiqueta, descripción, color, $bolsa chica, $caja palomera (null = no disponible), más pedida, img]
 let POP = [
   ['🧀','Queso Cheddar','Sabor intenso','Palomitas cubiertas de queso cheddar bien doradito y crujiente.','#ff7a1a',25,null,1,'1795476161025.jpg'],
   ['🍯','Caramelo','Dulce clásico','Caramelo dorado que brilla, cruje y se pega justo donde debe. Un antojo que no falla.','#c46a00',45,25,1,'1795476353497.jpg'],
@@ -217,7 +215,6 @@ let POP = [
   ['🧡','Cheetos','Queso y crujido','Cubierta crujiente estilo queso que se queda en cada bocado.','#e85d04',25,null,0,'1795476615415.jpg']
 ];
 
-// [emoji, nombre, etiqueta, descripción, color, precio, img]
 let DUL = [
   ['🍬','Peelerz','Gomitas AMOS · Todos los sabores','Pélalo, estíralo y saborea ese gomoso frutal, jugoso y brillante.','#e0457b',45,'file_00000000da78821296ab3348484aa8b9.png'],
   ['🥥','Raffaello','Coco cremoso','Coco rallado por fuera, crema suave y almendra crujiente por dentro.','#d9a441',12,''],
@@ -227,14 +224,12 @@ let DUL = [
   ['🧊','Icee Caja Chica','Refrescante','Colorido y bien frío para refrescar tu antojo.','#2f8fe0',20,'']
 ];
 
-// [emoji, nombre, etiqueta, descripción, color, img, precio100g]
 let GOMAS = [
   ['🍑','Goma Aros','Gomitas de Aros de Durazno','Aros dulces y frutales con textura suave para disfrutar a granel.','#ff7a1a','1795477152596.jpg',17],
   ['🥭','Manguito Enchilado','Manguitos Enchilados','Sabor dulce de mango con el toque picosito enchilado que antoja.','#f59f00','1795477467481.jpg',20],
   ['🦈','Gomas tiburones','Gomitas de Tiburones','Tiburones suaves y jugosos, dulces de la primera a la última mordida.','#1f8fd6','1795477508754.jpg',17]
 ];
 
-// [nombre, contenido, precio combo sugerido, precio normal, color, img]
 let COMBOS = [
   ['Noche de Cine','Bolsa chica de Caramelo + Peelerz + 100 g de Goma Aros',82,92,'#c46a00','1795476353497.jpg'],
   ['Pica y Endulza','Bolsa chica de Takis Azul + 100 g de Manguito Enchilado + Peelerz',82,90,'#2f6bd6','1795476546286.jpg'],
@@ -254,7 +249,6 @@ const FOTOS_SUBIDAS = [
   '1795477508754.jpg',
   'file_00000000da78821296ab3348484aa8b9.png'
 ];
-/* ============================================================== */
 
 const $ = id => document.getElementById(id);
 const m = n => '$' + (n % 1 ? n.toFixed(2) : n);
@@ -295,7 +289,6 @@ const fotoHtml = (src, alt, em) => src
   ? `<div class="prod-box"><img class="prod-img" src="${src}" alt="${alt}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="prod-fb" aria-hidden="true">${em}</span></div>`
   : '';
 
-/* ---------- Menú ---------- */
 const fopts = i => FMT.map((n, j) => [n, POP[i][5 + j], j]).filter(o => o[1] != null);
 
 function renderPops() {
@@ -326,7 +319,6 @@ $('comboG').innerHTML = COMBOS.map((c, i) =>
    <div class="row"><span class="price">${m(c[2])} <span class="old">${m(c[3])}</span></span><button class="add" onclick="addCombo(${i},this)">Agregar combo</button></div></article>`).join('');
 const addCombo = (i, b) => add('Combo ' + COMBOS[i][0], COMBOS[i][1], COMBOS[i][2], b);
 
-/* ---------- Gomitas a granel (pasos de 50 g) ---------- */
 function renderGomas() {
   $('gomG').innerHTML = GOMAS.map((e, i) => {
     const p100 = gPrecio100(i);
@@ -342,7 +334,6 @@ function renderTops() {
   $('topG').innerHTML = TOPS.map((t, i) => `<button class="chip" onclick="add('Topping extra',TOPS[${i}],TOP,this)">${t}<small>+${m(TOP)}</small></button>`).join('');
 }
 
-/* ---------- Panel rápido para cambiar precios o agregar productos ---------- */
 function renderAdmin() {
   $('adminPrecios').innerHTML =
     '<h3 class="st" style="margin-top:0">Cambiar precios rápido</h3>' +
@@ -424,7 +415,6 @@ function agregarProductoAdmin(ev) {
   toast('Producto agregado al menú');
 }
 
-/* ---------- Armador de bolsa ---------- */
 const precioArm = () => POP[arm.s][5 + arm.f] + (arm.gm >= 0 ? arm.g / 100 * gPrecio100(arm.gm) : 0) + arm.tp.length * TOP;
 
 function renderArm() {
@@ -454,7 +444,6 @@ function addArm(b) {
   renderArm();
 }
 
-/* ---------- Pedido ---------- */
 function add(titulo, detalle, precio, btn) {
   const l = cart.find(c => c.t === titulo && c.d === detalle);
   l ? l.q++ : cart.push({t:titulo, d:detalle, p:precio, q:1});
@@ -491,7 +480,6 @@ function toast(t) {
   clearTimeout(e._h); e._h = setTimeout(() => e.style.display = 'none', 1600);
 }
 
-/* ---------- Carrito y envío por WhatsApp ---------- */
 const abrirCarrito = () => { $('sh').classList.add('on'); renderCarrito(); };
 const cerrarCarrito = () => $('sh').classList.remove('on');
 
@@ -524,8 +512,7 @@ function enviar() {
   if (modo === 'Entrega' && !dr) { $('dr').classList.add('err'); return $('dr').focus(); }
 
   const L = ['🍿 *Pedido Amor Palomero*', '', '👤 ' + nm, modo === 'Entrega' ? '🛵 Entrega: ' + dr : '🏃 Paso a recoger', ''];
-  cart.forEach((c, i) => L.push((i + 1) + '. ' + c.t + (c.q > 1 ? ' ×' + c.q : '') + (c.d ? '
-    ' + c.d : '') + ' — ' + m(c.p * c.q)));
+  cart.forEach((c, i) => L.push((i + 1) + '. ' + c.t + (c.q > 1 ? ' ×' + c.q : '') + (c.d ? '\n    ' + c.d : '') + ' — ' + m(c.p * c.q)));
   if (cup && aplicado) L.push('', '🎁 Cupón PalomoPuntos ' + cup.code + ': 1 topping gratis (' + topGratis + ')');
   L.push('', '*Total: ' + m(total()) + ' MXN*');
 
@@ -534,12 +521,10 @@ function enviar() {
     try { localStorage.setItem('ap_cup', JSON.stringify(cup)); } catch (e) {}
     cup = null; aplicado = false; pintaCupon();
   }
-  window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(L.join('
-')), '_blank');
+  window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(L.join('\n')), '_blank');
   cart = []; actualizar(); cerrarCarrito();
 }
 
-/* ---------- Arcade: PalomoPuntos ---------- */
 let pts = 0, jugando = false, timer;
 const pintaPuntos = () => $('puntos').textContent = 'PalomoPuntos: ' + pts;
 const pintaCupon = () => $('cupMsg').textContent = cup ? '🎁 Tu cupón ' + cup.code + ' ya está en tu pedido: canjéalo antes de enviarlo.' : '';
@@ -573,7 +558,6 @@ function ganar() {
   toast('🎁 ¡Ganaste un topping gratis!'); pintaCupon(); actualizar(true);
 }
 
-/* ---------- Inicio ---------- */
 renderPops(); renderDulces(); renderGomas(); renderTops(); renderArm(); renderAdmin(); actualizar(); pintaCupon();
 </script>
 </body>
