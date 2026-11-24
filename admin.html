@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel del jefe · Amor Palomero</title>
+<style>
+:root{--r:#d62839;--b:#ffe7a3;--c:#fff8e6;--k:#2b1b17;--l:#ecd08a}
+*{box-sizing:border-box;margin:0}
+body{font:600 16px/1.4 system-ui,sans-serif;background:var(--b);color:var(--k);padding:16px 14px 110px;max-width:720px;margin:auto}
+h1{color:var(--r);font-size:1.7rem}h2{margin:22px 0 8px;color:var(--r)}
+a{color:var(--r)}
+.card{background:var(--c);border:2px solid var(--l);border-radius:16px;padding:12px}
+.it{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--l)}
+.it img,.ph{width:52px;height:52px;object-fit:cover;border-radius:10px;background:#fff;flex:none;display:grid;place-items:center;font-size:1.6rem}
+.it b{flex:1;min-width:0}
+label small{display:block;opacity:.7}
+input,select{padding:9px;border:2px solid var(--l);border-radius:10px;font:inherit;background:#fff;width:100%}
+.it input{width:70px}
+button{font:inherit;font-weight:800;border:0;border-radius:12px;padding:12px 14px;background:var(--k);color:var(--b);cursor:pointer}
+.x{background:none;color:var(--r);padding:6px}
+form{display:grid;gap:8px}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--k);padding:12px}
+#bar button{display:block;width:100%;max-width:720px;margin:auto;background:var(--r);color:#fff}
+</style>
+</head>
+<body>
+<h1>Panel del jefe</h1>
+<p>Cambia precios, agrega o quita productos. Al terminar, toca el botón rojo y sube los archivos que se descargan a GitHub. <a href="index.html">Ver la página</a></p>
+
+<h2>Palomitas</h2><div class="card" id="L-pop"></div>
+<h2>Dulces</h2><div class="card" id="L-dul"></div>
+<h2>Gomitas a granel (precio por 100 g)</h2><div class="card" id="L-gom"></div>
+<h2>Combos</h2><div class="card" id="L-com"></div>
+<h2>Toppings</h2><div class="card" id="L-top"></div>
+
+<h2>Agregar producto</h2>
+<div class="card">
+<form id="f">
+  <select name="t"><option value="pop">Palomitas</option><option value="dul">Dulce</option><option value="gom">Gomitas a granel</option></select>
+  <input name="em" maxlength="4" placeholder="Emoji (ej. 🍿)" value="🍿">
+  <input name="n" required placeholder="Nombre del producto">
+  <input name="tag" placeholder="Etiqueta corta (ej. Nuevo)" value="Nuevo">
+  <input name="d" required placeholder="Descripción corta">
+  <input name="p" type="number" min="1" required placeholder="Precio ($)">
+  <label><small>Foto (obligatoria)</small><input name="img" type="file" accept="image/*" required></label>
+  <button type="submit" id="ok">+ Agregar</button>
+</form>
+</div>
+
+<div id="bar"><button onclick="bajar()">⬇ Descargar archivos para publicar</button></div>
+
+<script src="productos.js"></script>
+<script>
+const C = structuredClone(window.CATALOGO || {POP:[],DUL:[],GOMAS:[],COMBOS:[],GOM:17,TOP:5,TOPS:[]});
+const NEW = {}, U = {};
+const $ = id => document.getElementById(id);
+const src = f => NEW[f] ? (U[f] = U[f] || URL.createObjectURL(NEW[f])) : f;
+const num = (path, v, lab, opt) => `<label><small>${lab}</small><input type="number" min="1" value="${v ?? ''}" oninput="${path}=this.value?+this.value:${opt ? 'null' : '0'}"></label>`;
+const row = (img, em, nom, inputs, k, i) => `<div class="it">${img ? `<img src="${src(img)}" alt="">` : `<span class="ph">${em}</span>`}<b>${nom}</b>${inputs}<button class="x" onclick="quitar('${k}',${i})" aria-label="Quitar ${nom}">🗑</button></div>`;
+const vacio = '<small>No hay productos.</small>';
+
+function draw() {
+  $('L-pop').innerHTML = C.POP.map((p, i) => row(p[8], p[0], p[1], num(`C.POP[${i}][5]`, p[5], 'Chica') + num(`C.POP[${i}][6]`, p[6], 'Caja', 1), 'POP', i)).join('') || vacio;
+  $('L-dul').innerHTML = C.DUL.map((p, i) => row(p[6], p[0], p[1], num(`C.DUL[${i}][5]`, p[5], 'Precio'), 'DUL', i)).join('') || vacio;
+  $('L-gom').innerHTML = C.GOMAS.map((p, i) => row(p[5], p[0], p[1], num(`C.GOMAS[${i}][6]`, p[6], '100 g'), 'GOMAS', i)).join('') || vacio;
+  $('L-com').innerHTML = C.COMBOS.map((p, i) => row(p[5], '🎁', p[0], num(`C.COMBOS[${i}][2]`, p[2], 'Precio') + num(`C.COMBOS[${i}][3]`, p[3], 'Antes'), 'COMBOS', i)).join('') || vacio;
+  $('L-top').innerHTML = `<div class="it">${num('C.TOP', C.TOP, 'Precio de cada topping')}</div><label><small>Toppings disponibles (separados por coma)</small><input type="text" value="${C.TOPS.join(', ')}" oninput="C.TOPS=this.value.split(',').map(t=>t.trim()).filter(Boolean)"></label>`;
+}
+
+function quitar(k, i) {
+  const n = C[k][i][k === 'COMBOS' ? 0 : 1];
+  if (confirm('¿Quitar "' + n + '" de la página?')) { C[k].splice(i, 1); draw(); }
+}
+
+async function chico(file) {
+  const b = await createImageBitmap(file), k = Math.min(1, 900 / Math.max(b.width, b.height));
+  const c = document.createElement('canvas'); c.width = Math.round(b.width * k); c.height = Math.round(b.height * k);
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(b, 0, 0, c.width, c.height);
+  return new Promise(r => c.toBlob(r, 'image/jpeg', .85));
+}
+
+$('f').onsubmit = async e => {
+  e.preventDefault();
+  const d = new FormData(e.target), t = d.get('t'), n = d.get('n').trim(), pr = +d.get('p');
+  const em = d.get('em') || '🍬', tag = d.get('tag') || 'Nuevo', ds = d.get('d').trim();
+  $('ok').textContent = 'Procesando foto…';
+  const slug = n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const fn = slug + '-' + Date.now().toString(36) + '.jpg';
+  NEW[fn] = await chico(d.get('img'));
+  if (t === 'pop') C.POP.push([em, n, tag, ds, '#d62839', pr, null, 0, fn]);
+  else if (t === 'dul') C.DUL.push([em, n, tag, ds, '#e0457b', pr, fn]);
+  else C.GOMAS.push([em, n, tag, ds, '#1f8fd6', fn, pr]);
+  e.target.reset(); $('ok').textContent = '+ Agregar'; draw();
+};
+
+function bajar() {
+  const dl = (blob, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); };
+  dl(new Blob(['window.CATALOGO = ' + JSON.stringify(C, null, 1) + ';\n'], {type:'text/javascript'}), 'productos.js');
+  Object.entries(NEW).forEach(([n, b], i) => setTimeout(() => dl(b, n), 500 * (i + 1)));
+  alert('Listo. Sube a GitHub el archivo productos.js y las fotos nuevas, en la misma carpeta que index.html.');
+}
+draw();
+</script>
+</body>
+</html>
